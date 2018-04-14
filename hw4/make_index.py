@@ -1,7 +1,9 @@
 import numpy as np
 import pickle
+import json
 import argparse
 import os
+import time
 from sklearn.cluster import KMeans
 
 from descriptor import ColorDescriptor
@@ -28,7 +30,7 @@ def index_train_features(bin_counts):
 
 
 def index_kmean(X_train, n_clusters):
-    kmeans = KMeans(n_clusters=n_clusters)
+    kmeans = KMeans(n_clusters=n_clusters, random_state=42)
     print("Training K-means model...")
     kmeans.fit(X_train)
     pickle.dump(kmeans, open("%s/kmeans.p" % args.dir, 'wb'))
@@ -51,15 +53,15 @@ def index_lhs(X_train, y_train, kmeans, n_bits=8):
 
 
 if __name__ == '__main__':
-    #bin_counts = (8, 12, 3) # 0.45321257936507936
+    start_time = time.time()
 
     parser = argparse.ArgumentParser(description="Get an index of train images and save it to the directory")
     parser.add_argument('--bins', nargs=3, type=int, metavar="H",
                         help="Number of bins for each of HSV diagrams (default [8, 12, 3])",
                         default=[8, 12, 3])
     parser.add_argument('-n', '--n_clusters', type=int, metavar="N",
-                        help="Number of clusters for K-means (default 50)",
-                        default=50)
+                        help="Number of clusters for K-means (default 30)",
+                        default=30)
     parser.add_argument('-b', '--n_bits', type=int, metavar="B",
                         help="Number of bits for LSH (default 8)",
                         default=8)
@@ -78,4 +80,7 @@ if __name__ == '__main__':
 
     index_lhs(X_train, y_train, kmeans, args.n_bits)
 
-    print("Index building is finished!")
+    elapsed_time = time.time() - start_time
+    m, s = divmod(elapsed_time, 60)
+    print("%.0f minutes %.0f seconds to build index" % (m, s))
+

@@ -28,13 +28,21 @@ class LSHash(object):
 
     def query(self, query_point, num_results=10):
 
-        candidates = set()
-
         binary_hash = self._hash(self.uniform_planes, query_point)
+        candidates = set()
+        max_dist = 3
+
         for key in self.hash_table.keys():
             distance = LSHash.hamming_dist(key, binary_hash)
-            if distance <= 3:
+            if distance <= max_dist:
                 candidates.update(self.hash_table.get(key, []))
+
+        while len(candidates) < 10:
+            max_dist += 1
+            for key in self.hash_table.keys():
+                distance = LSHash.hamming_dist(key, binary_hash)
+                if distance == max_dist:
+                    candidates.update(self.hash_table.get(key, []))
 
         candidates = [(ix, self.chi2_distance(query_point, ix[0]))
                       for ix in candidates]

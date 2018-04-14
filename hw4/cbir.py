@@ -58,15 +58,17 @@ def APk(query_img_path, results):
     return np.mean(np.cumsum(results_classes == query_class) / np.arange(1, 11))
 
 
-def retrieve(img_path):
-    print("Searching for", img_path)
-    query = cd.describe(img_path)
+def retrieve(img_path, descriptor, kmeans, lshs, verbose=True):
+    if verbose:
+        print("Searching for", img_path)
+    query = descriptor.describe(img_path)
     cluster = kmeans.predict([query])[0]
     results = lshs[cluster].query(query)
-    print("\nResults:")
-    for r in results:
-        print(r)
-    print("\nAPk: %0.2f" % APk(img_path, results))
+    if verbose:
+        print("\nResults:")
+        for r in results:
+            print(r)
+        print("\nAPk: %0.2f" % APk(img_path, results))
     return results
 
 
@@ -89,4 +91,4 @@ if __name__ == '__main__':
 
     y_test = read_test_set()
 
-    retrieve(args.retrieve)
+    retrieve(args.retrieve, cd, kmeans, lshs)
